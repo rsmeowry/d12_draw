@@ -26,7 +26,7 @@ target_link_libraries(d12_draw PRIVATE
         d3dcompiler.lib
 )
 
-# for debugging
+target_compile_definitions(d12_draw PRIVATE UNICODE _UNICODE)
 target_compile_definitions(d12_draw PRIVATE
         $<$<CONFIG:Debug>:DX12_ENABLE_DEBUG_LAYER>
 )

@@ -10,7 +10,7 @@ class Window {
   HWND handle;
 
 public:
-  bool Init(HINSTANCE hInstance, int show, int w, int h, const char* title);
+  bool Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t* title);
   HWND GetHandle() const { return handle; }
   bool Update();
 

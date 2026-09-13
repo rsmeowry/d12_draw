@@ -2,7 +2,7 @@
 
 #include "Util.h"
 
-bool Window::Init(HINSTANCE hInstance, int show, int w, int h, const char *title) {
+bool Window::Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t *title) {
   WNDCLASSEX wc = { };
   wc.cbSize = sizeof(wc);
   wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -14,7 +14,7 @@ bool Window::Init(HINSTANCE hInstance, int show, int w, int h, const char *title
   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
   wc.lpszMenuName = nullptr;
-  wc.lpszClassName = "D12Draw";
+  wc.lpszClassName = L"D12Draw";
   wc.hIconSm = wc.hIcon;
 
   if (!RegisterClassEx(&wc))
@@ -25,7 +25,7 @@ bool Window::Init(HINSTANCE hInstance, int show, int w, int h, const char *title
 
   this->handle = CreateWindowEx(
     WS_EX_APPWINDOW,
-    "D12Draw",
+    L"D12Draw",
     title,
     WS_OVERLAPPEDWINDOW,
     CW_USEDEFAULT,

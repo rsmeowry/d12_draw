@@ -8,7 +8,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, 
 {
   Window win;
 
-  if (!win.Init(hInstance, nShowCmd, 800, 640, "my d12 renderer :D"))
+  if (!win.Init(hInstance, nShowCmd, 800, 640, L"my d12 renderer :D"))
     return 0;
 
   MSG msg = { };
