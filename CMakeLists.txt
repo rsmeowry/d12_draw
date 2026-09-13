@@ -10,9 +10,14 @@ endif()
 
 add_executable(d12_draw WIN32
         src/main.cpp
-        src/Window.cpp
-        src/Window.h
+        src/GameWindow.cpp
+        src/GameWindow.h
         src/Util.h
+        src/Game.cpp
+        src/Game.h
+        include/Delegates.cpp
+        include/Delegates.h
+        src/InputDevice.cpp
 )
 
 target_include_directories(d12_draw PRIVATE
@@ -20,7 +25,11 @@ target_include_directories(d12_draw PRIVATE
         ${CMAKE_SOURCE_DIR}/external
 )
 
+find_package(directxtk12 CONFIG REQUIRED)
+
 target_link_libraries(d12_draw PRIVATE
+        Microsoft::DirectXTK12
+
         d3d12.lib
         dxgi.lib
         d3dcompiler.lib

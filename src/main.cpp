@@ -1,24 +1,19 @@
 #include <iostream>
 #include <windows.h>
 
+#include "Game.h"
+#include "GameWindow.h"
 #include "Util.h"
-#include "Window.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, int nShowCmd)
 {
-  Window win;
+  Game game;
+  GameWindow win;
 
-  if (!win.Init(hInstance, nShowCmd, 800, 640, L"my d12 renderer :D"))
+  if (!win.Init(hInstance, nShowCmd, 800, 640, L"my d12 renderer :D", &game))
     return 0;
 
-  MSG msg = { };
-  while (msg.message != WM_QUIT) {
-    win.Update();
-    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-    }
-  }
+  game.Run(win);
 
   return 0;
 }
