@@ -10,6 +10,9 @@ endif()
 
 add_executable(d12_draw WIN32
         src/main.cpp
+        src/Window.cpp
+        src/Window.h
+        src/Util.h
 )
 
 target_include_directories(d12_draw PRIVATE
