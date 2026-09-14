@@ -1,24 +1,32 @@
 #ifndef D12_DRAW_GAME_H
 #define D12_DRAW_GAME_H
 
-#include "GameWindow.h"
 #include <windows.h>
 
+#include "GameWindow.h"
 #include "GraphicsDevice.h"
 #include "Timer.h"
+
+class InputDevice;
 
 class DXFramework {
   bool exitRequested = false;
   bool paused = false;
   Timer time;
   GraphicsDevice gd;
+  InputDevice* input = nullptr;
 public:
   DXFramework();
 
-  void HandleWindowMessage(UINT, WPARAM, LPARAM);
-  void Run(GameWindow win);
+  void Initialize(GameWindow win) {
+    input = win.GetInputDevice();
+  }
 
-  Timer* GetTime();
+  void Update();
+
+  Timer& GetTime() { return time; }
+  GraphicsDevice& GetGD() { return gd; }
+  InputDevice* GetInput() const { return input; }
 };
 
 #endif // D12_DRAW_GAME_H

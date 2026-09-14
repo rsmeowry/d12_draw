@@ -38,8 +38,17 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
 
   return true;
 }
+void GraphicsDevice::Clear(const float col[4]) {
+  D3D12_CPU_DESCRIPTOR_HANDLE rtv = GetCurrentBbView();
+  D3D12_CPU_DESCRIPTOR_HANDLE dsv = GetDsv();
 
-void GraphicsDevice::Draw() {
+  commandList->OMSetRenderTargets(1, &rtv, TRUE, &dsv);
+  commandList->ClearRenderTargetView(rtv, col, 0, nullptr);
+  commandList->ClearDepthStencilView(
+    dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+}
+
+void GraphicsDevice::PrepareRt() {
   ThrowIfFailed(commandAlloc->Reset());
   ThrowIfFailed(commandList->Reset(commandAlloc.Get(), nullptr));
 
@@ -52,22 +61,15 @@ void GraphicsDevice::Draw() {
 
   commandList->RSSetViewports(1, &viewport);
   commandList->RSSetScissorRects(1, &scissorRect);
+}
 
-  D3D12_CPU_DESCRIPTOR_HANDLE rtv = GetCurrentBbView();
-  D3D12_CPU_DESCRIPTOR_HANDLE dsv = GetDsv();
-
-  commandList->OMSetRenderTargets(1, &rtv, TRUE, &dsv);
-  const float clearColor[] = { 0.2f, 0.6f, 0.9f, 1.0f }; // любой цвет — так проверяем, что всё работает
-  commandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
-  commandList->ClearDepthStencilView(
-    dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-
+void GraphicsDevice::Display() {
   // rt -> present
   CD3DX12_RESOURCE_BARRIER toPresent = CD3DX12_RESOURCE_BARRIER::Transition(
     GetCurrentBb(),
     D3D12_RESOURCE_STATE_RENDER_TARGET,
     D3D12_RESOURCE_STATE_PRESENT);
-    commandList->ResourceBarrier(1, &toPresent);
+  commandList->ResourceBarrier(1, &toPresent);
 
   ThrowIfFailed(commandList->Close());
 

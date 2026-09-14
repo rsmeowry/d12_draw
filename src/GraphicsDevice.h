@@ -3,6 +3,7 @@
 #ifndef D12_DRAW_GRAPHICSDEVICE_H
 #define D12_DRAW_GRAPHICSDEVICE_H
 
+#include <SimpleMath.h>
 #include <d3d12.h>
 #include <d3dx12.h>
 #include <dxgi1_6.h>
@@ -53,7 +54,9 @@ private:
 public:
   bool Initialize(HWND hWnd, UINT width, UINT height);
 
-  void Draw();
+  void Clear(const float col[4]);
+  void PrepareRt();
+  void Display();
   void Update(float dt);
 
 };

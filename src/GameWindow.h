@@ -6,16 +6,17 @@
 
 class InputDevice;
 class DXFramework;
+class D3DApp;
 
 class GameWindow {
   static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
   HWND handle = nullptr;
 
 public:
-  bool Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t* title, DXFramework* gamePtr);
+  bool Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t* title, D3DApp* gamePtr);
   [[nodiscard]] HWND GetHandle() const { return handle; }
   bool Update();
-  static InputDevice * GetInputDevice();
+  InputDevice* GetInputDevice();
 };
 
 
