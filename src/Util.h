@@ -1,7 +1,17 @@
 #ifndef D12_DRAW_UTIL_H
 #define D12_DRAW_UTIL_H
+#include <comdef.h>
 #include <cstdlib>
 #include <cstring>
+
+inline void ThrowIfFailed(HRESULT hr)
+{
+  if (FAILED(hr))
+  {
+    _com_error err(hr);
+    throw std::runtime_error(err.ErrorMessage());
+  }
+}
 
 inline void DebugLog(const char* fmt, ...) {
   char buf[1024];

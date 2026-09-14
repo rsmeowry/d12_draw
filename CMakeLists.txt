@@ -22,6 +22,8 @@ add_executable(d12_draw WIN32
         src/D3DApp.h
         src/Timer.cpp
         src/Timer.h
+        src/GraphicsDevice.cpp
+        src/GraphicsDevice.h
 )
 
 target_include_directories(d12_draw PRIVATE
