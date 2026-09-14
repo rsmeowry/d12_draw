@@ -1,11 +1,54 @@
 
 #include "GraphicsDevice.h"
 
-#include <SimpleMath.h>
+#include <array>
 #include <comdef.h>
 
-#include "D3DApp.h"
+#include "pipeline/Vertex.hpp"
 #include "Util.h"
+
+void GraphicsDevice::TestCubeGeom() {
+  std::array<Vertex1, 8> vertices =
+  {
+    Vertex1{ { -1.0f, -1.0f, -1.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+    Vertex1{ { -1.0f, +1.0f, -1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+    Vertex1{ { +1.0f, +1.0f, -1.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } },
+    Vertex1{ { +1.0f, -1.0f, -1.0f }, { 1.0f, 1.0f, 0.0f, 1.0f } },
+    Vertex1{ { -1.0f, -1.0f, +1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f } },
+    Vertex1{ { -1.0f, +1.0f, +1.0f }, { 0.0f, 1.0f, 1.0f, 1.0f } },
+    Vertex1{ { +1.0f, +1.0f, +1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
+    Vertex1{ { +1.0f, -1.0f, +1.0f }, { 0.0f, 0.0f, 0.0f, 1.0f } },
+  };
+
+  std::array<std::uint16_t, 36> indices =
+  {
+    0, 1, 2,  0, 2, 3,
+    4, 6, 5,  4, 7, 6,
+    4, 5, 1,  4, 1, 0,
+    3, 2, 6,  3, 6, 7,
+    1, 5, 6,  1, 6, 2,
+    4, 0, 3,  4, 3, 7,
+  };
+
+  const UINT vbByteSize = vertices.size() * sizeof(Vertex1);
+  const UINT ibByteSize = indices.size() * sizeof(std::uint16_t);
+
+  vertexBufferGPU = CreateDefaultBuffer(
+    d3dDevice.Get(), commandList.Get(), vertices.data(), vbByteSize, vertexBufferUploader);
+
+  indexBufferGPU = CreateDefaultBuffer(
+    d3dDevice.Get(), commandList.Get(), indices.data(), ibByteSize, indexBufferUploader);
+
+  vbv.BufferLocation = vertexBufferGPU->GetGPUVirtualAddress();
+  vbv.StrideInBytes = sizeof(Vertex1);
+  vbv.SizeInBytes = vbByteSize;
+
+  ibv.BufferLocation = indexBufferGPU->GetGPUVirtualAddress();
+  ibv.Format = DXGI_FORMAT_R16_UINT;
+  ibv.SizeInBytes = ibByteSize;
+
+  indexCount = static_cast<UINT>(indices.size());
+}
 
 bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   if (!InitDevice())
@@ -28,6 +71,7 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   // opening alloc to set barrier from dsv
   ThrowIfFailed(commandList->Reset(commandAlloc.Get(), nullptr));
   CreateDepthStencilBuffer(width, height);
+  TestCubeGeom();
   commandList->Close(); // and closing
 
   ID3D12CommandList* cmdLists[] = { commandList.Get() };
@@ -35,6 +79,9 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   FlushCommandQueue(); // saving barrier
 
   SetViewportAndScissor(width, height);
+
+  // shaders !!!!!!11
+  CompileShaders();
 
   return true;
 }
@@ -283,6 +330,11 @@ void GraphicsDevice::FlushCommandQueue() {
     ThrowIfFailed(fence->SetEventOnCompletion(currentFence, fenceEvent));
     WaitForSingleObject(fenceEvent, INFINITE);
   }
+}
+
+void GraphicsDevice::CompileShaders() {
+  vsByteCode = CompileShader(L"shaders/Color.hlsl", nullptr, "vert", "vs_5_1");
+  fsByteCode = CompileShader(L"shaders/Color.hlsl", nullptr, "frag", "ps_5_1");
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE GraphicsDevice::GetCurrentBbView() const {

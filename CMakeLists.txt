@@ -26,6 +26,7 @@ add_executable(d12_draw WIN32
         src/GraphicsDevice.h
         src/MyApp.cpp
         src/MyApp.h
+        src/pipeline/Vertex.hpp
 )
 
 target_include_directories(d12_draw PRIVATE
@@ -51,4 +52,10 @@ target_compile_definitions(d12_draw PRIVATE
 target_compile_definitions(d12_draw PRIVATE UNICODE _UNICODE)
 target_compile_definitions(d12_draw PRIVATE
         $<$<CONFIG:Debug>:DX12_ENABLE_DEBUG_LAYER>
+)
+
+add_custom_command(TARGET d12_draw POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/shaders
+        $<TARGET_FILE_DIR:d12_draw>/shaders
 )

@@ -1,8 +1,7 @@
-
-
 #ifndef D12_DRAW_GRAPHICSDEVICE_H
 #define D12_DRAW_GRAPHICSDEVICE_H
 
+#define INITGUID
 #include <SimpleMath.h>
 #include <d3d12.h>
 #include <d3dx12.h>
@@ -24,6 +23,7 @@ private:
   void CreateDepthStencilBuffer(UINT width, UINT height);
   void SetViewportAndScissor(UINT width, UINT height);
   void FlushCommandQueue();
+  void CompileShaders();
   D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBbView() const;
   ID3D12Resource* GetCurrentBb() const;
   D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() const;
@@ -31,6 +31,7 @@ private:
   static constexpr UINT swapChainBufferCount = 2;
   UINT currBackBuffer = 0;
 
+  // base shit
   ComPtr<IDXGIFactory6> dxgiFactory;
   ComPtr<ID3D12Device> d3dDevice;
   ComPtr<ID3D12Fence> fence;
@@ -45,12 +46,28 @@ private:
   D3D12_VIEWPORT viewport = {};
   D3D12_RECT scissorRect = {};
 
+  // vb/ib
+  ComPtr<ID3D12Resource> vertexBufferGPU;
+  ComPtr<ID3D12Resource> vertexBufferUploader;
+  ComPtr<ID3D12Resource> indexBufferGPU;
+  ComPtr<ID3D12Resource> indexBufferUploader;
+
+  // shaders
+  ComPtr<ID3DBlob> vsByteCode;
+  ComPtr<ID3DBlob> fsByteCode;
+
+  D3D12_VERTEX_BUFFER_VIEW vbv = {};
+  D3D12_INDEX_BUFFER_VIEW ibv = {};
+
+  UINT indexCount = 0;
   UINT64 currentFence = 0;
   HANDLE fenceEvent = nullptr;
 
   UINT rtvDescriptorSize = 0;
   UINT dsvDescriptorSize = 0;
   UINT cbvSrvUavDescriptorSize = 0;
+
+  void TestCubeGeom();
 public:
   bool Initialize(HWND hWnd, UINT width, UINT height);
 
