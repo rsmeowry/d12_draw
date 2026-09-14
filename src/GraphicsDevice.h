@@ -10,12 +10,30 @@
 using Microsoft::WRL::ComPtr;
 
 class GraphicsDevice {
-public:
+private:
   bool InitDevice();
+  void CreateFence();
+  void CacheDescriptorSizes();
+  void CreateCommandObjects();
+  void CreateSwapChain(HWND hWnd, UINT width, UINT height);
+  void CreateRtvHeap();
+  void CreateRenderViews();
+  void FlushCommandQueue();
+  D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBbView() const;
+  ID3D12Resource* GetCurrentBb() const;
+
+  static constexpr UINT swapChainBufferCount = 2;
+  UINT currBackBuffer = 0;
 
   ComPtr<IDXGIFactory6> dxgiFactory;
   ComPtr<ID3D12Device> d3dDevice;
   ComPtr<ID3D12Fence> fence;
+  ComPtr<ID3D12CommandQueue> commandQueue;
+  ComPtr<ID3D12CommandAllocator> commandAlloc;
+  ComPtr<ID3D12GraphicsCommandList> commandList;
+  ComPtr<IDXGISwapChain3> swapChain;
+  ComPtr<ID3D12DescriptorHeap> rtvHeap;
+  ComPtr<ID3D12Resource> m_swapChainBuffer[swapChainBufferCount];
 
   UINT64 currentFence = 0;
   HANDLE fenceEvent = nullptr;
@@ -23,6 +41,9 @@ public:
   UINT rtvDescriptorSize = 0;
   UINT dsvDescriptorSize = 0;
   UINT cbvSrvUavDescriptorSize = 0;
+public:
+  bool Initialize(HWND hWnd, UINT width, UINT height);
+
 };
 
 #endif // D12_DRAW_GRAPHICSDEVICE_H
