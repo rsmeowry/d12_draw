@@ -29,6 +29,7 @@ add_executable(d12_draw WIN32
 target_include_directories(d12_draw PRIVATE
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/external
+        ${CMAKE_SOURCE_DIR}/external/DirectX-Headers/include/directx
 )
 
 find_package(directxtk12 CONFIG REQUIRED)

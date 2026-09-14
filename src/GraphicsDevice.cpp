@@ -16,6 +16,17 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   CreateRtvHeap();
   CreateRenderViews();
 
+  // opening alloc to set barrier from dsv
+  ThrowIfFailed(commandList->Reset(commandAlloc.Get(), nullptr));
+  CreateDepthStencilBuffer(width, height);
+  commandList->Close(); // and closing
+
+  ID3D12CommandList* cmdLists[] = { commandList.Get() };
+  commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+  FlushCommandQueue(); // saving barrier
+
+  SetViewportAndScissor(width, height);
+
   return true;
 }
 
@@ -140,6 +151,70 @@ void GraphicsDevice::CreateRenderViews() {
   }
 }
 
+void GraphicsDevice::CreateDsvHeap() {
+  D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+  dsvHeapDesc.NumDescriptors = 1;
+  dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+  dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+  ThrowIfFailed(d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap)));
+}
+
+void GraphicsDevice::CreateDepthStencilBuffer(UINT width, UINT height) {
+  D3D12_RESOURCE_DESC depthStencilDesc = {};
+  depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+  depthStencilDesc.Alignment = 0;
+  depthStencilDesc.Width = width;
+  depthStencilDesc.Height = height;
+  depthStencilDesc.DepthOrArraySize = 1;
+  depthStencilDesc.MipLevels = 1;
+  depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+  depthStencilDesc.SampleDesc.Count = 1;
+  depthStencilDesc.SampleDesc.Quality = 0;
+  depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+  depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+  D3D12_CLEAR_VALUE optClear = {};
+  optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+  optClear.DepthStencil.Depth = 1.0f;
+  optClear.DepthStencil.Stencil = 0;
+
+  CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
+
+  ThrowIfFailed(d3dDevice->CreateCommittedResource(
+    &heapProps,
+    D3D12_HEAP_FLAG_NONE,
+    &depthStencilDesc,
+    D3D12_RESOURCE_STATE_COMMON,
+    &optClear,
+    IID_PPV_ARGS(&depthStencilBuffer))
+    );
+
+  d3dDevice->CreateDepthStencilView(
+    depthStencilBuffer.Get(),
+    nullptr,
+    dsvHeap->GetCPUDescriptorHandleForHeapStart()
+    );
+
+  CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+    depthStencilBuffer.Get(),
+    D3D12_RESOURCE_STATE_COMMON,
+    D3D12_RESOURCE_STATE_DEPTH_WRITE
+    );
+
+  commandList->ResourceBarrier(1, &barrier);
+}
+
+void GraphicsDevice::SetViewportAndScissor(UINT width, UINT height) {
+  viewport.TopLeftX = 0.;
+  viewport.TopLeftY = 0.;
+  viewport.Width = static_cast<float>(width);
+  viewport.Height = static_cast<float>(height);
+  viewport.MinDepth = 0.0f;
+  viewport.MaxDepth = 1.0f; // linear depth
+
+  scissorRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height)};
+}
 
 void GraphicsDevice::FlushCommandQueue() {
   currentFence++;
