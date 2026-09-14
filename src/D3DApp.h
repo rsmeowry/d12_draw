@@ -6,7 +6,11 @@
 
 class D3DApp {
 private:
+  bool appPaused = false;
+  bool resizing = false;
   bool mustExit = false;
+
+  DXFramework* dx;
 protected:
   HINSTANCE hInstance;
 
@@ -21,13 +25,17 @@ protected:
   virtual void Update(const Timer& t) = 0;
   virtual void Draw(GraphicsDevice& gd, const Timer& t) = 0;
 
-  virtual void OnMouseDown(WPARAM btnState, int x, int y) { };
-  virtual void OnMouseUp(WPARAM btnState, int x, int y) { };
-  virtual void OnMouseMove(WPARAM btnState, int x, int y) { };
-
 public:
   void HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
   int Run();
+  void Activate();
+  void Deactivate();
+  void BeginResizing();
+  void EndResizing();
+
+  virtual void OnMouseDown(WPARAM btnState, int x, int y) { };
+  virtual void OnMouseUp(WPARAM btnState, int x, int y) { };
+  virtual void OnMouseMove(WPARAM btnState, int x, int y) { };
 private:
 };
 

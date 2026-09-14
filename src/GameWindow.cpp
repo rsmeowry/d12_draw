@@ -2,6 +2,7 @@
 
 #include <cstdio>
 
+#include <windowsx.h>
 #include "D3DApp.h"
 #include "DXFramework.h"
 #include "InputDevice.h"
@@ -81,6 +82,58 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT umsg, WPARAM wprm, LPARAM lprm) {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
       D3DApp* gamePtr = reinterpret_cast<D3DApp*>(lptr);
       gamePtr->HandleMessage(umsg, wprm, lprm);
+      return 0;
+    }
+    case WM_ACTIVATE: {
+      const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      D3DApp* gamePtr = reinterpret_cast<D3DApp*>(lptr);
+      if (LOWORD(wprm) == WA_INACTIVE) {
+        gamePtr->Deactivate();
+      } else {
+        gamePtr->Activate();
+      }
+      return 0;
+    }
+    case WM_ENTERSIZEMOVE: {
+      const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      D3DApp* gamePtr = reinterpret_cast<D3DApp*>(lptr);
+      gamePtr->BeginResizing();
+      return 0;
+    }
+    case WM_EXITSIZEMOVE: {
+      const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      D3DApp* gamePtr = reinterpret_cast<D3DApp*>(lptr);
+      gamePtr->EndResizing();
+      return 0;
+    }
+    case WM_MENUCHAR: {
+      return MAKELRESULT(0, MNC_CLOSE);
+    }
+    case WM_GETMINMAXINFO: {
+      ((MINMAXINFO*)lprm)->ptMinTrackSize.x = 200;
+      ((MINMAXINFO*)lprm)->ptMinTrackSize.y = 200;
+      return 0;
+    }
+    case WM_LBUTTONDOWN:
+    case WM_MBUTTONDOWN:
+    case WM_RBUTTONDOWN: {
+      const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      D3DApp* gamePtr = reinterpret_cast<D3DApp*>(lptr);
+      gamePtr->OnMouseDown(wprm, GET_X_LPARAM(lprm), GET_Y_LPARAM(lprm));
+      return 0;
+    }
+    case WM_MOUSEMOVE: {
+      const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      D3DApp* gamePtr = reinterpret_cast<D3DApp*>(lptr);
+      gamePtr->OnMouseMove(wprm, GET_X_LPARAM(lprm), GET_Y_LPARAM(lprm));
+      return 0;
+    }
+    case WM_LBUTTONUP:
+    case WM_MBUTTONUP:
+    case WM_RBUTTONUP: {
+      const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      D3DApp* gamePtr = reinterpret_cast<D3DApp*>(lptr);
+      gamePtr->OnMouseUp(wprm, GET_X_LPARAM(lprm), GET_Y_LPARAM(lprm));
       return 0;
     }
     case WM_INPUT: {

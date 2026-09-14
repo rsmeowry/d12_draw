@@ -13,6 +13,9 @@ void D3DApp::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 int D3DApp::Run() {
   try {
     DXFramework fw;
+
+    dx = &fw;
+
     GameWindow win;
 
     if (!win.Init(hInstance, 0, 800, 640, L"My D3D Renderer :D", this))
@@ -52,4 +55,23 @@ int D3DApp::Run() {
     MessageBoxA(nullptr, e.what(), "Error in renderer :(", MB_OK | MB_ICONERROR);
     return -1;
   }
+}
+void D3DApp::Activate() {
+  appPaused = true;
+  dx->GetTime().Stop();
+}
+void D3DApp::Deactivate() {
+  appPaused = false;
+  dx->GetTime().Start();
+}
+void D3DApp::BeginResizing() {
+  appPaused = true;
+  resizing = true;
+  dx->GetTime().Stop();
+}
+void D3DApp::EndResizing() {
+  appPaused = false;
+  resizing = false;
+  dx->GetTime().Start();
+  OnResize();
 }
