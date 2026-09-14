@@ -24,9 +24,14 @@ add_executable(d12_draw WIN32
         src/Timer.h
         src/GraphicsDevice.cpp
         src/GraphicsDevice.h
-        src/MyApp.cpp
-        src/MyApp.h
+        src/apps/MyApp.cpp
+        src/apps/MyApp.h
         src/pipeline/Vertex.hpp
+        src/pipeline/UploadBuffer.cpp
+        src/pipeline/UploadBuffer.h
+        src/apps/BoxApp.cpp
+        src/apps/BoxApp.h
+        src/pipeline/ObjectConstants.hpp
 )
 
 target_include_directories(d12_draw PRIVATE

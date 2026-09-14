@@ -3,7 +3,12 @@
 
 #include <comdef.h>
 #include <d3dcompiler.h>
+#include <d3dx12.h>
 #include <stdexcept>
+
+inline UINT CalcConstantBufferByteSize(UINT byteSize) {
+  return (byteSize + 255) & ~255;
+}
 
 inline std::string WStringToString(const std::wstring& wstr)
 {
