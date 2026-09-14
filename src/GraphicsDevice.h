@@ -25,6 +25,7 @@ private:
   void FlushCommandQueue();
   D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBbView() const;
   ID3D12Resource* GetCurrentBb() const;
+  D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() const;
 
   static constexpr UINT swapChainBufferCount = 2;
   UINT currBackBuffer = 0;
@@ -51,6 +52,9 @@ private:
   UINT cbvSrvUavDescriptorSize = 0;
 public:
   bool Initialize(HWND hWnd, UINT width, UINT height);
+
+  void Draw();
+  void Update(float dt);
 
 };
 

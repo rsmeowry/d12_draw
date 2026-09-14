@@ -4,12 +4,14 @@
 #include "GameWindow.h"
 #include <windows.h>
 
+#include "GraphicsDevice.h"
 #include "Timer.h"
 
 class DXFramework {
   bool exitRequested = false;
   bool paused = false;
   Timer time;
+  GraphicsDevice gd;
 public:
   DXFramework();
 

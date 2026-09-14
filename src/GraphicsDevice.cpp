@@ -1,5 +1,7 @@
 
 #include "GraphicsDevice.h"
+
+#include <SimpleMath.h>
 #include <comdef.h>
 
 #include "D3DApp.h"
@@ -9,12 +11,19 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   if (!InitDevice())
     return false;
 
+  OutputDebugStringA("CREATE FENCE");
   CreateFence();
+  OutputDebugStringA("CACHE");
   CacheDescriptorSizes();
+  OutputDebugStringA("CO");
   CreateCommandObjects();
+  OutputDebugStringA("SC");
   CreateSwapChain(hWnd, width, height);
+  OutputDebugStringA("RTV HEAP");
   CreateRtvHeap();
+  OutputDebugStringA("RTV");
   CreateRenderViews();
+  CreateDsvHeap();
 
   // opening alloc to set barrier from dsv
   ThrowIfFailed(commandList->Reset(commandAlloc.Get(), nullptr));
@@ -30,6 +39,51 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   return true;
 }
 
+void GraphicsDevice::Draw() {
+  ThrowIfFailed(commandAlloc->Reset());
+  ThrowIfFailed(commandList->Reset(commandAlloc.Get(), nullptr));
+
+  // present -> rt
+  CD3DX12_RESOURCE_BARRIER toRenderTarget = CD3DX12_RESOURCE_BARRIER::Transition(
+    GetCurrentBb(),
+    D3D12_RESOURCE_STATE_PRESENT,
+    D3D12_RESOURCE_STATE_RENDER_TARGET);
+    commandList->ResourceBarrier(1, &toRenderTarget);
+
+  commandList->RSSetViewports(1, &viewport);
+  commandList->RSSetScissorRects(1, &scissorRect);
+
+  D3D12_CPU_DESCRIPTOR_HANDLE rtv = GetCurrentBbView();
+  D3D12_CPU_DESCRIPTOR_HANDLE dsv = GetDsv();
+
+  commandList->OMSetRenderTargets(1, &rtv, TRUE, &dsv);
+  const float clearColor[] = { 0.2f, 0.6f, 0.9f, 1.0f }; // любой цвет — так проверяем, что всё работает
+  commandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+  commandList->ClearDepthStencilView(
+    dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+  // rt -> present
+  CD3DX12_RESOURCE_BARRIER toPresent = CD3DX12_RESOURCE_BARRIER::Transition(
+    GetCurrentBb(),
+    D3D12_RESOURCE_STATE_RENDER_TARGET,
+    D3D12_RESOURCE_STATE_PRESENT);
+    commandList->ResourceBarrier(1, &toPresent);
+
+  ThrowIfFailed(commandList->Close());
+
+  ID3D12CommandList* cmdLists[] = { commandList.Get() };
+  commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
+  ThrowIfFailed(swapChain->Present(1, 0));
+  currBackBuffer = swapChain->GetCurrentBackBufferIndex();
+
+  FlushCommandQueue();
+}
+
+void GraphicsDevice::Update(float dt) {
+  // TODO: update logiccc
+}
+
 bool GraphicsDevice::InitDevice() {
 #if defined(DEBUG) || defined(_DEBUG)
   {
@@ -40,7 +94,7 @@ bool GraphicsDevice::InitDevice() {
   }
 #endif
 
-  ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory)));
+  ThrowIfFailed(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
 
   HRESULT hr = D3D12CreateDevice(
     nullptr,
@@ -120,7 +174,7 @@ void GraphicsDevice::CreateSwapChain(HWND hWnd, UINT width, UINT height) {
     nullptr,
     &swapChain1));
 
-  ThrowIfFailed(swapChain1.As(&d3dDevice));
+  ThrowIfFailed(swapChain1.As(&swapChain));
 
   currBackBuffer = swapChain->GetCurrentBackBufferIndex();
 }
@@ -190,11 +244,13 @@ void GraphicsDevice::CreateDepthStencilBuffer(UINT width, UINT height) {
     IID_PPV_ARGS(&depthStencilBuffer))
     );
 
+  OutputDebugStringA("BEFORE");
   d3dDevice->CreateDepthStencilView(
     depthStencilBuffer.Get(),
     nullptr,
     dsvHeap->GetCPUDescriptorHandleForHeapStart()
     );
+  OutputDebugStringA("AFTER");
 
   CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
     depthStencilBuffer.Get(),
@@ -235,4 +291,8 @@ D3D12_CPU_DESCRIPTOR_HANDLE GraphicsDevice::GetCurrentBbView() const {
 
 ID3D12Resource* GraphicsDevice::GetCurrentBb() const {
   return m_swapChainBuffer[currBackBuffer].Get();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE GraphicsDevice::GetDsv() const {
+  return dsvHeap->GetCPUDescriptorHandleForHeapStart();
 }

@@ -7,13 +7,18 @@
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, int nShowCmd)
 {
-  DXFramework game;
-  GameWindow win;
+  try {
+    DXFramework game;
+    GameWindow win;
 
-  if (!win.Init(hInstance, nShowCmd, 800, 640, L"my d12 renderer :D", &game))
+    if (!win.Init(hInstance, nShowCmd, 800, 640, L"my d12 renderer :D", &game))
+      return 0;
+
+    game.Run(win);
+
     return 0;
-
-  game.Run(win);
-
-  return 0;
+  } catch (const std::exception& e) {
+    MessageBoxA(nullptr, e.what(), "Fatal Error", MB_OK | MB_ICONERROR);
+    return -1;
+  }
 }

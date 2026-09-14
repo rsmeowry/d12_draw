@@ -19,6 +19,10 @@ void DXFramework::HandleWindowMessage(UINT msg, WPARAM wprm, LPARAM lprm) {
 }
 
 void DXFramework::Run(GameWindow win) {
+  RECT rect;
+  GetWindowRect(win.GetHandle(), &rect);
+  gd.Initialize(win.GetHandle(), rect.right - rect.left, rect.bottom - rect.top);
+
   MSG msg = { };
   time.Reset();
 
@@ -34,6 +38,8 @@ void DXFramework::Run(GameWindow win) {
     }
 
     time.Tick();
+    gd.Update(time.DeltaTime());
+    gd.Draw();
 
     if (!paused) {
 
