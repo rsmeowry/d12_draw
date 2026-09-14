@@ -1,13 +1,13 @@
 #include "GameWindow.h"
 
 #include <cstdio>
-#include "Game.h"
+#include "DXFramework.h"
 #include "InputDevice.h"
 #include "Util.h"
 
 InputDevice* input = nullptr;
 
-bool GameWindow::Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t *title, Game* gamePtr) {
+bool GameWindow::Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t *title, DXFramework* gamePtr) {
   WNDCLASSEX wc = { };
   wc.cbSize = sizeof(wc);
   wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -69,14 +69,14 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT umsg, WPARAM wprm, LPARAM lprm) {
     case WM_CLOSE:
     {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      Game* gamePtr = reinterpret_cast<Game*>(lptr);
+      DXFramework* gamePtr = reinterpret_cast<DXFramework*>(lptr);
       gamePtr->HandleWindowMessage(umsg, wprm, lprm);
       PostQuitMessage(0);
       return 0;
     }
     case WM_KEYDOWN: {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      Game* gamePtr = reinterpret_cast<Game*>(lptr);
+      DXFramework* gamePtr = reinterpret_cast<DXFramework*>(lptr);
       gamePtr->HandleWindowMessage(umsg, wprm, lprm);
       return 0;
     }

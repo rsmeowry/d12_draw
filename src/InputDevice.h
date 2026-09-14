@@ -5,11 +5,11 @@
 #include <SimpleMath.h>
 #include "../include/Delegates.h"
 
-#include "Game.h"
+#include "DXFramework.h"
 
 class InputDevice
 	{
-		friend class Game;
+		friend class DXFramework;
 
     HWND hWnd = nullptr;
 		std::unordered_set<Keys>* keys;

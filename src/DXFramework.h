@@ -4,11 +4,19 @@
 #include "GameWindow.h"
 #include <windows.h>
 
-class Game {
+#include "Timer.h"
+
+class DXFramework {
   bool exitRequested = false;
+  bool paused = false;
+  Timer time;
 public:
+  DXFramework();
+
   void HandleWindowMessage(UINT, WPARAM, LPARAM);
   void Run(GameWindow win);
+
+  Timer* GetTime();
 };
 
 #endif // D12_DRAW_GAME_H

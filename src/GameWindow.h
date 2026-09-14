@@ -4,16 +4,15 @@
 #include <vector>
 #include <windows.h>
 
-
 class InputDevice;
-class Game;
+class DXFramework;
 
 class GameWindow {
   static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
   HWND handle = nullptr;
 
 public:
-  bool Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t* title, Game* gamePtr);
+  bool Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t* title, DXFramework* gamePtr);
   [[nodiscard]] HWND GetHandle() const { return handle; }
   bool Update();
   static InputDevice * GetInputDevice();

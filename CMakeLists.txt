@@ -13,11 +13,15 @@ add_executable(d12_draw WIN32
         src/GameWindow.cpp
         src/GameWindow.h
         src/Util.h
-        src/Game.cpp
-        src/Game.h
+        src/DXFramework.cpp
+        src/DXFramework.h
         include/Delegates.cpp
         include/Delegates.h
         src/InputDevice.cpp
+        src/D3DApp.cpp
+        src/D3DApp.h
+        src/Timer.cpp
+        src/Timer.h
 )
 
 target_include_directories(d12_draw PRIVATE
@@ -35,6 +39,10 @@ target_link_libraries(d12_draw PRIVATE
         d3dcompiler.lib
 )
 
+target_compile_definitions(d12_draw PRIVATE
+        WIN32_LEAN_AND_MEAN
+        NOMINMAX
+)
 target_compile_definitions(d12_draw PRIVATE UNICODE _UNICODE)
 target_compile_definitions(d12_draw PRIVATE
         $<$<CONFIG:Debug>:DX12_ENABLE_DEBUG_LAYER>

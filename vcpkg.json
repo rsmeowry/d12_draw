@@ -2,6 +2,9 @@
   "name": "d12-draw",
   "version-string": "0.1.0",
   "dependencies": [
-    "directxtk12"
+    {
+      "name": "directxtk12",
+      "default-features": false
+    }
   ]
 }
