@@ -76,7 +76,7 @@ void GraphicsDevice::Display() {
   ID3D12CommandList* cmdLists[] = { commandList.Get() };
   commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
 
-  ThrowIfFailed(swapChain->Present(1, 0));
+  ThrowIfFailed(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING));
   currBackBuffer = swapChain->GetCurrentBackBufferIndex();
 
   FlushCommandQueue();
@@ -165,7 +165,7 @@ void GraphicsDevice::CreateSwapChain(HWND hWnd, UINT width, UINT height) {
   sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   sd.BufferCount = swapChainBufferCount;
   sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-  sd.Flags = 0;
+  sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING ;
 
   ComPtr<IDXGISwapChain1> swapChain1;
   ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(

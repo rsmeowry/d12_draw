@@ -11,6 +11,7 @@ private:
   bool mustExit = false;
 
   DXFramework* dx;
+  GameWindow* window;
 protected:
   HINSTANCE hInstance;
 
@@ -24,6 +25,9 @@ protected:
   virtual bool Initialize() = 0;
   virtual void Update(const Timer& t) = 0;
   virtual void Draw(GraphicsDevice& gd, const Timer& t) = 0;
+
+  DXFramework* GetDX() const { return dx; }
+  GameWindow* GetWin() const { return window; }
 
 public:
   void HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);

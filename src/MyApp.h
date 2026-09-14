@@ -7,6 +7,8 @@ class MyApp final : public D3DApp {
 private:
   bool exitRequested = false;
 
+  void UpdateTitle() const;
+
 public:
   explicit MyApp(HINSTANCE hinstance) : D3DApp(hinstance) {}
 

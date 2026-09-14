@@ -13,10 +13,10 @@ void D3DApp::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 int D3DApp::Run() {
   try {
     DXFramework fw;
-
-    dx = &fw;
+    this->dx = &fw;
 
     GameWindow win;
+    this->window = &win;
 
     if (!win.Init(hInstance, 0, 800, 640, L"My D3D Renderer :D", this))
       return 0;
