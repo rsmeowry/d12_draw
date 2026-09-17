@@ -15,8 +15,8 @@ class GameWindow {
 public:
   bool Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t *title, D3DApp *gamePtr);
   [[nodiscard]] HWND GetHandle() const { return handle; }
-  bool Update();
-  InputDevice *GetInputDevice();
+  bool Update() const;
+  static InputDevice *GetInputDevice();
 };
 
 

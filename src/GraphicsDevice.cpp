@@ -2,13 +2,12 @@
 #include "GraphicsDevice.h"
 
 #include <array>
-#include <comdef.h>
 
 #include "Util.h"
 #include "pipeline/Vertex.hpp"
 
 void GraphicsDevice::CubeGeom1() {
-  std::array<Vertex1, 8> vertices = {
+  constexpr std::array vertices = {
       Vertex1{{-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
       Vertex1{{-1.0f, +1.0f, -1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
       Vertex1{{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}},
@@ -19,12 +18,12 @@ void GraphicsDevice::CubeGeom1() {
       Vertex1{{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}},
   };
 
-  std::array<std::uint16_t, 36> indices = {
+  const std::array<std::uint16_t, 36> indices = {
       0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 4, 5, 1, 4, 1, 0, 3, 2, 6, 3, 6, 7, 1, 5, 6, 1, 6, 2, 4, 0, 3, 4, 3, 7,
   };
 
-  const UINT vbByteSize = vertices.size() * sizeof(Vertex1);
-  const UINT ibByteSize = indices.size() * sizeof(std::uint16_t);
+  constexpr UINT vbByteSize = vertices.size() * sizeof(Vertex1);
+  constexpr UINT ibByteSize = indices.size() * sizeof(std::uint16_t);
 
   vertexBufferGPU =
       CreateDefaultBuffer(d3dDevice.Get(), commandList.Get(), vertices.data(), vbByteSize, vertexBufferUploader);
@@ -46,7 +45,7 @@ void GraphicsDevice::CubeGeom1() {
 void GraphicsDevice::CubeGeom2() {
   using namespace DirectX;
 
-  std::array<Vertex2, 24> vertices =
+  constexpr std::array vertices =
   {
     Vertex2{ {-1,-1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
     Vertex2{ {-1,+1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
@@ -80,7 +79,7 @@ void GraphicsDevice::CubeGeom2() {
     Vertex2{ {+1,-1,+1}, {0,-1,0}, {1.0f, 0.0f, 1.0f} },
   };
 
-  std::array<std::uint16_t, 36> indices =
+  const std::array<std::uint16_t, 36> indices =
   {
     0,1,2,  0,2,3, // front
     4,5,6,  4,6,7, // back
@@ -110,9 +109,8 @@ void GraphicsDevice::CubeGeom2() {
   indexCount = static_cast<UINT>(indices.size());
 }
 
-bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
-  if (!InitDevice())
-    return false;
+bool GraphicsDevice::Initialize(const HWND hWnd, const UINT width, const UINT height) {
+  InitDevice();
 
   OutputDebugStringA("CREATE FENCE");
   CreateFence();
@@ -132,7 +130,7 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   ThrowIfFailed(commandList->Reset(commandAlloc.Get(), nullptr));
   CreateDepthStencilBuffer(width, height);
   CubeGeom2();
-  commandList->Close(); // and closing
+  ThrowIfFailed(commandList->Close()); // and closing
 
   ID3D12CommandList *cmdLists[] = {commandList.Get()};
   commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
@@ -150,21 +148,21 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
 
   return true;
 }
-void GraphicsDevice::Clear(const float col[4]) {
-  D3D12_CPU_DESCRIPTOR_HANDLE rtv = GetCurrentBbView();
-  D3D12_CPU_DESCRIPTOR_HANDLE dsv = GetDsv();
+void GraphicsDevice::Clear(const float col[4]) const {
+  const D3D12_CPU_DESCRIPTOR_HANDLE rtv = GetCurrentBbView();
+  const D3D12_CPU_DESCRIPTOR_HANDLE dsv = GetDsv();
 
   commandList->OMSetRenderTargets(1, &rtv, TRUE, &dsv);
   commandList->ClearRenderTargetView(rtv, col, 0, nullptr);
   commandList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 }
 
-void GraphicsDevice::PrepareRt() {
+void GraphicsDevice::PrepareRt() const {
   ThrowIfFailed(commandAlloc->Reset());
   ThrowIfFailed(commandList->Reset(commandAlloc.Get(), pso.Get()));
 
   // present -> rt
-  CD3DX12_RESOURCE_BARRIER toRenderTarget = CD3DX12_RESOURCE_BARRIER::Transition(
+  const CD3DX12_RESOURCE_BARRIER toRenderTarget = CD3DX12_RESOURCE_BARRIER::Transition(
       GetCurrentBb(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
   commandList->ResourceBarrier(1, &toRenderTarget);
 
@@ -174,7 +172,7 @@ void GraphicsDevice::PrepareRt() {
 
 void GraphicsDevice::Display() {
   // rt -> present
-  CD3DX12_RESOURCE_BARRIER toPresent = CD3DX12_RESOURCE_BARRIER::Transition(
+  const CD3DX12_RESOURCE_BARRIER toPresent = CD3DX12_RESOURCE_BARRIER::Transition(
       GetCurrentBb(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
   commandList->ResourceBarrier(1, &toPresent);
 
@@ -195,11 +193,11 @@ void GraphicsDevice::Update(const float dt) const {
   static float angle = 0.0f;
   angle += dt;
 
-  XMVECTOR eyePos = XMVectorSet(7.0f, 3.0f, -5.0f, 1.0f);
+  const XMVECTOR eyePos = XMVectorSet(7.0f, 3.0f, -5.0f, 1.0f);
 
-  XMMATRIX world = XMMatrixRotationY(angle);
-  XMMATRIX view = XMMatrixLookAtLH(eyePos, XMVectorZero(), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-  XMMATRIX proj = XMMatrixPerspectiveFovLH(XM_PIDIV4, viewport.Width / viewport.Height, 1.0f, 100.0f);
+  const XMMATRIX world = XMMatrixRotationY(angle);
+  const XMMATRIX view = XMMatrixLookAtLH(eyePos, XMVectorZero(), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+  const XMMATRIX proj = XMMatrixPerspectiveFovLH(XM_PIDIV4, viewport.Width / viewport.Height, 1.0f, 100.0f);
 
   ObjectConstants objConstants;
   XMStoreFloat4x4(&objConstants.world, XMMatrixTranspose(world));
@@ -245,10 +243,8 @@ bool GraphicsDevice::InitDevice() {
 
   ThrowIfFailed(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
 
-  HRESULT hr = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3dDevice));
-
   // warp fallback
-  if (FAILED(hr)) {
+  if (const HRESULT hr = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3dDevice)); FAILED(hr)) {
     ComPtr<IDXGIAdapter> warpAdapter;
     ThrowIfFailed(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
 
@@ -283,7 +279,7 @@ void GraphicsDevice::CreateCommandObjects() {
   ThrowIfFailed(commandList->Close());
 }
 
-void GraphicsDevice::CreateSwapChain(HWND hWnd, UINT width, UINT height) {
+void GraphicsDevice::CreateSwapChain(const HWND hWnd, const UINT width, const UINT height) {
   swapChain.Reset();
 
   DXGI_SWAP_CHAIN_DESC1 sd = {};
@@ -335,7 +331,7 @@ void GraphicsDevice::CreateDsvHeap() {
   ThrowIfFailed(d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap)));
 }
 
-void GraphicsDevice::CreateDepthStencilBuffer(UINT width, UINT height) {
+void GraphicsDevice::CreateDepthStencilBuffer(const UINT width, const UINT height) {
   D3D12_RESOURCE_DESC depthStencilDesc = {};
   depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
   depthStencilDesc.Alignment = 0;
@@ -354,7 +350,7 @@ void GraphicsDevice::CreateDepthStencilBuffer(UINT width, UINT height) {
   optClear.DepthStencil.Depth = 1.0f;
   optClear.DepthStencil.Stencil = 0;
 
-  CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
+  const CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
 
   ThrowIfFailed(d3dDevice->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &depthStencilDesc,
                                                    D3D12_RESOURCE_STATE_COMMON, &optClear,
@@ -364,13 +360,13 @@ void GraphicsDevice::CreateDepthStencilBuffer(UINT width, UINT height) {
   d3dDevice->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, dsvHeap->GetCPUDescriptorHandleForHeapStart());
   OutputDebugStringA("AFTER");
 
-  CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+  const CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
       depthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
   commandList->ResourceBarrier(1, &barrier);
 }
 
-void GraphicsDevice::SetViewportAndScissor(UINT width, UINT height) {
+void GraphicsDevice::SetViewportAndScissor(const UINT width, const UINT height) {
   viewport.TopLeftX = 0.;
   viewport.TopLeftY = 0.;
   viewport.Width = static_cast<float>(width);
@@ -405,13 +401,13 @@ void GraphicsDevice::CreateRootSignature() {
   slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
 
 
-  CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
+  const CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
                                           D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
   ComPtr<ID3DBlob> serializedRootSig;
   ComPtr<ID3DBlob> errorBlob;
 
-  HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serializedRootSig, &errorBlob);
+  const HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serializedRootSig, &errorBlob);
 
   if (errorBlob != nullptr) {
     OutputDebugStringA(static_cast<const char *>(errorBlob->GetBufferPointer()));
@@ -445,11 +441,11 @@ void GraphicsDevice::CreatePSO() {
   psoDesc.pRootSignature = rootSignature.Get();
 
   psoDesc.VS = {
-      reinterpret_cast<const BYTE *>(vsByteCode->GetBufferPointer()),
+      static_cast<const BYTE *>(vsByteCode->GetBufferPointer()),
       vsByteCode->GetBufferSize(),
   };
   psoDesc.PS = {
-      reinterpret_cast<const BYTE *>(fsByteCode->GetBufferPointer()),
+      static_cast<const BYTE *>(fsByteCode->GetBufferPointer()),
       fsByteCode->GetBufferSize(),
   };
 

@@ -6,11 +6,9 @@
 
 #include "Util.h"
 
-
 using namespace DirectX::SimpleMath;
 
-
-InputDevice::InputDevice(HWND hWnd) : hWnd(hWnd) {
+InputDevice::InputDevice(const HWND hWnd) : hWnd(hWnd) {
   keys = new std::unordered_set<Keys>();
 
   RAWINPUTDEVICE Rid[2];
@@ -26,15 +24,15 @@ InputDevice::InputDevice(HWND hWnd) : hWnd(hWnd) {
   Rid[1].hwndTarget = hWnd;
 
   if (RegisterRawInputDevices(Rid, 2, sizeof(Rid[0])) == FALSE) {
-    auto errorCode = GetLastError();
+    const auto errorCode = GetLastError();
     DebugLog("ERROR %i", errorCode);
   }
 }
 
 InputDevice::~InputDevice() { delete keys; }
 
-void InputDevice::OnKeyDown(KeyboardInputEventArgs args) {
-  bool isBreak = args.Flags & 0x01;
+void InputDevice::OnKeyDown(KeyboardInputEventArgs args) const {
+  const bool isBreak = args.Flags & 0x01;
 
   auto key = static_cast<Keys>(args.VKey);
 
@@ -44,15 +42,15 @@ void InputDevice::OnKeyDown(KeyboardInputEventArgs args) {
     key = Keys::RightShift;
 
   if (isBreak) {
-    if (keys->count(key))
+    if (keys->contains(key))
       RemovePressedKey(key);
   } else {
-    if (!keys->count(key))
+    if (!keys->contains(key))
       AddPressedKey(key);
   }
 }
 
-void InputDevice::OnMouseMove(RawMouseEventArgs args) {
+void InputDevice::OnMouseMove(const RawMouseEventArgs &args) {
   if (args.ButtonFlags & static_cast<int>(MouseButtonFlags::LeftButtonDown))
     AddPressedKey(Keys::LeftButton);
   if (args.ButtonFlags & static_cast<int>(MouseButtonFlags::LeftButtonUp))
@@ -78,8 +76,8 @@ void InputDevice::OnMouseMove(RawMouseEventArgs args) {
   MouseMove.Broadcast(moveArgs);
 }
 
-void InputDevice::AddPressedKey(Keys key) const { keys->insert(key); }
+void InputDevice::AddPressedKey(const Keys key) const { keys->insert(key); }
 
-void InputDevice::RemovePressedKey(Keys key) const { keys->erase(key); }
+void InputDevice::RemovePressedKey(const Keys key) const { keys->erase(key); }
 
-bool InputDevice::IsKeyDown(Keys key) const { return keys->count(key); }
+bool InputDevice::IsKeyDown(const Keys key) const { return keys->contains(key); }

@@ -1,8 +1,7 @@
-
 #ifndef D12_DRAW_D3DAPP_H
 #define D12_DRAW_D3DAPP_H
-#include "DXFramework.h"
 
+#include "DXFramework.h"
 
 class D3DApp {
 private:
@@ -10,13 +9,13 @@ private:
   bool resizing = false;
   bool mustExit = false;
 
-  DXFramework *dx;
-  GameWindow *window;
+  DXFramework *dx = nullptr;
+  GameWindow *window = nullptr;
 
 protected:
   HINSTANCE hInstance;
 
-  D3DApp(HINSTANCE) : hInstance(hInstance) {};
+  explicit D3DApp(const HINSTANCE h) : hInstance(h) {};
   D3DApp(const D3DApp &) = delete;
   D3DApp &operator=(const D3DApp &) = delete;
   virtual ~D3DApp() {}

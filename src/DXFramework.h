@@ -1,8 +1,6 @@
 #ifndef D12_DRAW_GAME_H
 #define D12_DRAW_GAME_H
 
-#include <windows.h>
-
 #include "GameWindow.h"
 #include "GraphicsDevice.h"
 #include "Timer.h"

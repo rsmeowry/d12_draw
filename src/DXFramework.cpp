@@ -1,11 +1,5 @@
 #include "DXFramework.h"
 
-#include <cstdio>
-#include <format>
-
-#include "InputDevice.h"
-#include "Util.h"
-
 DXFramework::DXFramework() { time = Timer(); }
 
 void DXFramework::Update() {

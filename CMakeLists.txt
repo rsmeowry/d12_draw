@@ -27,7 +27,6 @@ add_executable(d12_draw WIN32
         src/apps/MyApp.cpp
         src/apps/MyApp.h
         src/pipeline/Vertex.hpp
-        src/pipeline/UploadBuffer.cpp
         src/pipeline/UploadBuffer.h
         src/apps/BoxApp.cpp
         src/apps/BoxApp.h

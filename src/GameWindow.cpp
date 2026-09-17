@@ -1,7 +1,5 @@
 #include "GameWindow.h"
 
-#include <cstdio>
-
 #include <windowsx.h>
 #include "D3DApp.h"
 #include "DXFramework.h"
@@ -10,7 +8,7 @@
 
 InputDevice *input = nullptr;
 
-bool GameWindow::Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t *title, D3DApp *gamePtr) {
+bool GameWindow::Init(const HINSTANCE hInstance, int, const int w, const int h, const wchar_t *title, D3DApp *gamePtr) {
   WNDCLASSEX wc = {};
   wc.cbSize = sizeof(wc);
   wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -20,7 +18,7 @@ bool GameWindow::Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t
   wc.hInstance = hInstance;
   wc.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-  wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
+  wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
   wc.lpszMenuName = nullptr;
   wc.lpszClassName = L"D12Draw";
   wc.hIconSm = wc.hIcon;
@@ -43,11 +41,11 @@ bool GameWindow::Init(HINSTANCE hInstance, int show, int w, int h, const wchar_t
   return true;
 }
 
-bool GameWindow::Update() { return UpdateWindow(this->handle); }
+bool GameWindow::Update() const { return UpdateWindow(this->handle); }
 
 InputDevice *GameWindow::GetInputDevice() { return input; }
 
-LRESULT GameWindow::WndProc(HWND hWnd, UINT umsg, WPARAM wprm, LPARAM lprm) {
+LRESULT GameWindow::WndProc(const HWND hWnd, const UINT umsg, const WPARAM wprm, const LPARAM lprm) {
   if (umsg == WM_CREATE) {
     const auto *const createStruct = reinterpret_cast<CREATESTRUCT *>(lprm);
     ::SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(createStruct->lpCreateParams));
@@ -57,20 +55,20 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT umsg, WPARAM wprm, LPARAM lprm) {
     case WM_DESTROY:
     case WM_CLOSE: {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      D3DApp *gamePtr = reinterpret_cast<D3DApp *>(lptr);
+      const auto gamePtr = reinterpret_cast<D3DApp *>(lptr);
       gamePtr->HandleMessage(umsg, wprm, lprm);
       PostQuitMessage(0);
       return 0;
     }
     case WM_KEYDOWN: {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      D3DApp *gamePtr = reinterpret_cast<D3DApp *>(lptr);
+      const auto gamePtr = reinterpret_cast<D3DApp *>(lptr);
       gamePtr->HandleMessage(umsg, wprm, lprm);
       return 0;
     }
     case WM_ACTIVATE: {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      D3DApp *gamePtr = reinterpret_cast<D3DApp *>(lptr);
+      const auto gamePtr = reinterpret_cast<D3DApp *>(lptr);
       if (LOWORD(wprm) == WA_INACTIVE) {
         gamePtr->Deactivate();
       } else {
@@ -80,13 +78,13 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT umsg, WPARAM wprm, LPARAM lprm) {
     }
     case WM_ENTERSIZEMOVE: {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      D3DApp *gamePtr = reinterpret_cast<D3DApp *>(lptr);
+      const auto gamePtr = reinterpret_cast<D3DApp *>(lptr);
       gamePtr->BeginResizing();
       return 0;
     }
     case WM_EXITSIZEMOVE: {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      D3DApp *gamePtr = reinterpret_cast<D3DApp *>(lptr);
+      const auto gamePtr = reinterpret_cast<D3DApp *>(lptr);
       gamePtr->EndResizing();
       return 0;
     }
@@ -94,21 +92,21 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT umsg, WPARAM wprm, LPARAM lprm) {
       return MAKELRESULT(0, MNC_CLOSE);
     }
     case WM_GETMINMAXINFO: {
-      ((MINMAXINFO *) lprm)->ptMinTrackSize.x = 200;
-      ((MINMAXINFO *) lprm)->ptMinTrackSize.y = 200;
+      reinterpret_cast<MINMAXINFO *>(lprm)->ptMinTrackSize.x = 200;
+      reinterpret_cast<MINMAXINFO *>(lprm)->ptMinTrackSize.y = 200;
       return 0;
     }
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN: {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      D3DApp *gamePtr = reinterpret_cast<D3DApp *>(lptr);
+      const auto gamePtr = reinterpret_cast<D3DApp *>(lptr);
       gamePtr->OnMouseDown(wprm, GET_X_LPARAM(lprm), GET_Y_LPARAM(lprm));
       return 0;
     }
     case WM_MOUSEMOVE: {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      D3DApp *gamePtr = reinterpret_cast<D3DApp *>(lptr);
+      const auto gamePtr = reinterpret_cast<D3DApp *>(lptr);
       gamePtr->OnMouseMove(wprm, GET_X_LPARAM(lprm), GET_Y_LPARAM(lprm));
       return 0;
     }
@@ -116,24 +114,19 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT umsg, WPARAM wprm, LPARAM lprm) {
     case WM_MBUTTONUP:
     case WM_RBUTTONUP: {
       const LONG_PTR lptr = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      D3DApp *gamePtr = reinterpret_cast<D3DApp *>(lptr);
+      const auto gamePtr = reinterpret_cast<D3DApp *>(lptr);
       gamePtr->OnMouseUp(wprm, GET_X_LPARAM(lprm), GET_Y_LPARAM(lprm));
       return 0;
     }
     case WM_INPUT: {
       UINT dwSize = 0;
       GetRawInputData(reinterpret_cast<HRAWINPUT>(lprm), RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
-      LPBYTE lpb = new BYTE[dwSize];
-      if (lpb == nullptr) {
-        return 0;
-      }
+      const auto lpb = new BYTE[dwSize];
 
-      if (GetRawInputData((HRAWINPUT) lprm, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+      if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lprm), RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
         DebugLog("GetRawInputData does not return correct size !\n");
 
-      RAWINPUT *raw = reinterpret_cast<RAWINPUT *>(lpb);
-
-      if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+      if (const auto raw = reinterpret_cast<RAWINPUT *>(lpb); raw->header.dwType == RIM_TYPEKEYBOARD) {
         input->OnKeyDown({raw->data.keyboard.MakeCode, raw->data.keyboard.Flags, raw->data.keyboard.VKey,
                           raw->data.keyboard.Message});
       } else if (raw->header.dwType == RIM_TYPEMOUSE) {

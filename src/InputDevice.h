@@ -100,6 +100,6 @@ public:
     int Y;
   };
 
-  void OnKeyDown(KeyboardInputEventArgs args);
-  void OnMouseMove(RawMouseEventArgs args);
+  void OnKeyDown(KeyboardInputEventArgs args) const;
+  void OnMouseMove(const RawMouseEventArgs &args);
 };

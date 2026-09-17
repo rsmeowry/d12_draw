@@ -8,13 +8,13 @@
 
 using Microsoft::WRL::ComPtr;
 
-inline UINT CalcConstantBufferByteSize(UINT byteSize) { return (byteSize + 255) & ~255; }
+inline UINT CalcConstantBufferByteSize(const UINT byteSize) { return (byteSize + 255) & ~255; }
 
 inline std::string WStringToString(const std::wstring &wstr) {
   if (wstr.empty())
     return {};
 
-  int size = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()), nullptr, 0, nullptr, nullptr);
+  const int size = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()), nullptr, 0, nullptr, nullptr);
 
   std::string result(size, '\0');
   WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()), result.data(), size, nullptr, nullptr);
@@ -22,9 +22,9 @@ inline std::string WStringToString(const std::wstring &wstr) {
   return result;
 }
 
-inline void ThrowIfFailed(HRESULT hr) {
+inline void ThrowIfFailed(const HRESULT hr) {
   if (FAILED(hr)) {
-    _com_error err(hr);
+    const _com_error err(hr);
     throw std::runtime_error(WStringToString(err.ErrorMessage()));
   }
 }
@@ -41,17 +41,17 @@ inline void DebugLog(const char *fmt, ...) {
 }
 
 inline ComPtr<ID3D12Resource> CreateDefaultBuffer(ID3D12Device *device, ID3D12GraphicsCommandList *cmdList,
-                                                  const void *initData, UINT64 byteSize,
+                                                  const void *initData, const UINT64 byteSize,
                                                   ComPtr<ID3D12Resource> &uploadBuffer) {
   ComPtr<ID3D12Resource> defaultBuffer;
 
-  CD3DX12_HEAP_PROPERTIES defaultHeapProps(D3D12_HEAP_TYPE_DEFAULT);
-  CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(byteSize);
+  const CD3DX12_HEAP_PROPERTIES defaultHeapProps(D3D12_HEAP_TYPE_DEFAULT);
+  const CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(byteSize);
 
   ThrowIfFailed(device->CreateCommittedResource(&defaultHeapProps, D3D12_HEAP_FLAG_NONE, &bufferDesc,
                                                 D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&defaultBuffer)));
 
-  CD3DX12_HEAP_PROPERTIES uploadHeapProps(D3D12_HEAP_TYPE_UPLOAD);
+  const CD3DX12_HEAP_PROPERTIES uploadHeapProps(D3D12_HEAP_TYPE_UPLOAD);
 
   ThrowIfFailed(device->CreateCommittedResource(&uploadHeapProps, D3D12_HEAP_FLAG_NONE, &bufferDesc,
                                                 D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
@@ -62,13 +62,13 @@ inline ComPtr<ID3D12Resource> CreateDefaultBuffer(ID3D12Device *device, ID3D12Gr
   subResourceData.RowPitch = byteSize;
   subResourceData.SlicePitch = byteSize;
 
-  CD3DX12_RESOURCE_BARRIER toCopyDest = CD3DX12_RESOURCE_BARRIER::Transition(
+  const CD3DX12_RESOURCE_BARRIER toCopyDest = CD3DX12_RESOURCE_BARRIER::Transition(
       defaultBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
   cmdList->ResourceBarrier(1, &toCopyDest);
 
   UpdateSubresources<1>(cmdList, defaultBuffer.Get(), uploadBuffer.Get(), 0, 0, 1, &subResourceData);
 
-  CD3DX12_RESOURCE_BARRIER toGenericRead = CD3DX12_RESOURCE_BARRIER::Transition(
+  const CD3DX12_RESOURCE_BARRIER toGenericRead = CD3DX12_RESOURCE_BARRIER::Transition(
       defaultBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
   cmdList->ResourceBarrier(1, &toGenericRead);
 
@@ -85,7 +85,7 @@ inline ComPtr<ID3DBlob> CompileShader(const std::wstring &filename, const D3D_SH
   ComPtr<ID3DBlob> byteCode;
   ComPtr<ID3DBlob> errors;
 
-  HRESULT hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, entrypoint.c_str(),
+  const HRESULT hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, entrypoint.c_str(),
                                   target.c_str(), compileFlags, 0, &byteCode, &errors);
 
   if (errors != nullptr) {

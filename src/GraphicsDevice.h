@@ -2,7 +2,6 @@
 #define D12_DRAW_GRAPHICSDEVICE_H
 
 #define INITGUID
-#include <SimpleMath.h>
 #include <d3d12.h>
 #include <d3dx12.h>
 #include <dxgi1_6.h>
@@ -91,8 +90,8 @@ private:
 public:
   bool Initialize(HWND hWnd, UINT width, UINT height);
 
-  void Clear(const float col[4]);
-  void PrepareRt();
+  void Clear(const float col[4]) const;
+  void PrepareRt() const;
   void Display();
   void Update(float dt) const;
   void RenderContainedObject() const;

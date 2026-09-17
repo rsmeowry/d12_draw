@@ -9,7 +9,7 @@ private:
   void UpdateTitle() const;
 
 public:
-  explicit BoxApp(HINSTANCE hinstance) : D3DApp(hinstance) {}
+  explicit BoxApp(const HINSTANCE hinstance) : D3DApp(hinstance) {}
 
 protected:
   bool ExitRequested() override { return exitRequested; }

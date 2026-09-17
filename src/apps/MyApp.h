@@ -10,7 +10,7 @@ private:
   void UpdateTitle() const;
 
 public:
-  explicit MyApp(HINSTANCE hinstance) : D3DApp(hinstance) {}
+  explicit MyApp(const HINSTANCE hinstance) : D3DApp(hinstance) {}
 
 protected:
   bool ExitRequested() override { return exitRequested; }

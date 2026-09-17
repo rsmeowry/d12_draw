@@ -2,10 +2,8 @@
 #include "D3DApp.h"
 
 #include "InputDevice.h"
-#include "Keys.h"
-#include "Util.h"
 
-void D3DApp::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+void D3DApp::HandleMessage(const UINT msg, WPARAM, LPARAM) {
   if (msg == WM_DESTROY || msg == WM_CLOSE || msg == WM_QUIT) {
     mustExit = true;
   }
@@ -32,9 +30,7 @@ int D3DApp::Run() {
 
     MSG msg = {};
     fw.GetTime().Reset();
-    bool shouldQuit = false;
     while (!mustExit) {
-      shouldQuit = msg.message == WM_QUIT;
       win.Update();
       while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
         TranslateMessage(&msg);
