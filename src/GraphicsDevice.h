@@ -35,6 +35,7 @@ private:
   ID3D12Resource *GetCurrentBb() const;
   D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() const;
 
+  static constexpr auto shaderName = L"shaders/Phong.hlsl";
   static constexpr DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
   static constexpr DXGI_FORMAT depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
   static constexpr UINT swapChainBufferCount = 2;
@@ -84,7 +85,8 @@ private:
   UINT dsvDescriptorSize = 0;
   UINT cbvSrvUavDescriptorSize = 0;
 
-  void TestCubeGeom();
+  void CubeGeom1();
+  void CubeGeom2();
 
 public:
   bool Initialize(HWND hWnd, UINT width, UINT height);

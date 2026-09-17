@@ -7,7 +7,7 @@
 #include "Util.h"
 #include "pipeline/Vertex.hpp"
 
-void GraphicsDevice::TestCubeGeom() {
+void GraphicsDevice::CubeGeom1() {
   std::array<Vertex1, 8> vertices = {
       Vertex1{{-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
       Vertex1{{-1.0f, +1.0f, -1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
@@ -43,6 +43,73 @@ void GraphicsDevice::TestCubeGeom() {
   indexCount = static_cast<UINT>(indices.size());
 }
 
+void GraphicsDevice::CubeGeom2() {
+  using namespace DirectX;
+
+  std::array<Vertex2, 24> vertices =
+  {
+    Vertex2{ {-1,-1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
+    Vertex2{ {-1,+1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
+    Vertex2{ {+1,+1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
+    Vertex2{ {+1,-1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
+
+    Vertex2{ {-1,-1,+1}, {0,0,+1}, {0.0f, 1.0f, 0.0f} },
+    Vertex2{ {+1,-1,+1}, {0,0,+1}, {0.0f, 1.0f, 0.0f} },
+    Vertex2{ {+1,+1,+1}, {0,0,+1}, {0.0f, 1.0f, 0.0f} },
+    Vertex2{ {-1,+1,+1}, {0,0,+1}, {0.0f, 1.0f, 0.0f} },
+
+    Vertex2{ {-1,-1,+1}, {-1,0,0}, {0.0f, 0.0f, 1.0f} },
+    Vertex2{ {-1,+1,+1}, {-1,0,0}, {0.0f, 0.0f, 1.0f} },
+    Vertex2{ {-1,+1,-1}, {-1,0,0}, {0.0f, 0.0f, 1.0f} },
+    Vertex2{ {-1,-1,-1}, {-1,0,0}, {0.0f, 0.0f, 1.0f} },
+
+    Vertex2{ {+1,-1,-1}, {+1,0,0}, {1.0f, 1.0f, 0.0f} },
+    Vertex2{ {+1,+1,-1}, {+1,0,0}, {1.0f, 1.0f, 0.0f} },
+    Vertex2{ {+1,+1,+1}, {+1,0,0}, {1.0f, 1.0f, 0.0f} },
+    Vertex2{ {+1,-1,+1}, {+1,0,0}, {1.0f, 1.0f, 0.0f} },
+
+    Vertex2{ {-1,+1,-1}, {0,+1,0}, {0.0f, 1.0f, 1.0f} },
+    Vertex2{ {-1,+1,+1}, {0,+1,0}, {0.0f, 1.0f, 1.0f} },
+    Vertex2{ {+1,+1,+1}, {0,+1,0}, {0.0f, 1.0f, 1.0f} },
+    Vertex2{ {+1,+1,-1}, {0,+1,0}, {0.0f, 1.0f, 1.0f} },
+
+    // Bottom face (-Y) — пурпурный
+    Vertex2{ {-1,-1,+1}, {0,-1,0}, {1.0f, 0.0f, 1.0f} },
+    Vertex2{ {-1,-1,-1}, {0,-1,0}, {1.0f, 0.0f, 1.0f} },
+    Vertex2{ {+1,-1,-1}, {0,-1,0}, {1.0f, 0.0f, 1.0f} },
+    Vertex2{ {+1,-1,+1}, {0,-1,0}, {1.0f, 0.0f, 1.0f} },
+  };
+
+  std::array<std::uint16_t, 36> indices =
+  {
+    0,1,2,  0,2,3, // front
+    4,5,6,  4,6,7, // back
+    8,9,10, 8,10,11, // left
+    12,13,14, 12,14,15, // right
+    16,17,18, 16,18,19, // top
+    20,21,22, 20,22,23, // bottom
+  };
+
+  constexpr UINT vbByteSize = vertices.size() * sizeof(Vertex2);
+  constexpr UINT ibByteSize = indices.size() * sizeof(std::uint16_t);
+
+  vertexBufferGPU = CreateDefaultBuffer(
+    d3dDevice.Get(), commandList.Get(), vertices.data(), vbByteSize, vertexBufferUploader);
+
+  indexBufferGPU = CreateDefaultBuffer(
+    d3dDevice.Get(), commandList.Get(), indices.data(), ibByteSize, indexBufferUploader);
+
+  vbv.BufferLocation = vertexBufferGPU->GetGPUVirtualAddress();
+  vbv.StrideInBytes = sizeof(Vertex2);
+  vbv.SizeInBytes = vbByteSize;
+
+  ibv.BufferLocation = indexBufferGPU->GetGPUVirtualAddress();
+  ibv.Format = DXGI_FORMAT_R16_UINT;
+  ibv.SizeInBytes = ibByteSize;
+
+  indexCount = static_cast<UINT>(indices.size());
+}
+
 bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   if (!InitDevice())
     return false;
@@ -64,7 +131,7 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   // opening alloc to set barrier from dsv
   ThrowIfFailed(commandList->Reset(commandAlloc.Get(), nullptr));
   CreateDepthStencilBuffer(width, height);
-  TestCubeGeom();
+  CubeGeom2();
   commandList->Close(); // and closing
 
   ID3D12CommandList *cmdLists[] = {commandList.Get()};
@@ -128,15 +195,26 @@ void GraphicsDevice::Update(const float dt) const {
   static float angle = 0.0f;
   angle += dt;
 
+  XMVECTOR eyePos = XMVectorSet(7.0f, 3.0f, -5.0f, 1.0f);
+
   XMMATRIX world = XMMatrixRotationY(angle);
-  XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(3.0f, 3.0f, -5.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
-                                   XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+  XMMATRIX view = XMMatrixLookAtLH(eyePos, XMVectorZero(), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
   XMMATRIX proj = XMMatrixPerspectiveFovLH(XM_PIDIV4, viewport.Width / viewport.Height, 1.0f, 100.0f);
 
-  XMMATRIX worldViewProj = world * view * proj;
-
   ObjectConstants objConstants;
-  XMStoreFloat4x4(&objConstants.worldViewProj, XMMatrixTranspose(worldViewProj));
+  XMStoreFloat4x4(&objConstants.world, XMMatrixTranspose(world));
+  XMStoreFloat4x4(&objConstants.worldViewProj, XMMatrixTranspose(world * view * proj));
+
+  XMStoreFloat3(&objConstants.eyePosW, eyePos);
+
+  objConstants.lightDirection = { -0.5f, -1.0f, 0.5f };
+  objConstants.lightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+  objConstants.ambientColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+  objConstants.diffuseColor = { 0.7f, 0.2f, 0.2f, 1.0f };
+  objConstants.specularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+  objConstants.shininess = 120.0f;
+
   objectCB->CopyData(0, objConstants);
 }
 
@@ -356,14 +434,14 @@ void GraphicsDevice::FlushCommandQueue() {
 }
 
 void GraphicsDevice::CompileShaders() {
-  vsByteCode = CompileShader(L"shaders/Color.hlsl", nullptr, "vert", "vs_5_1");
-  fsByteCode = CompileShader(L"shaders/Color.hlsl", nullptr, "frag", "ps_5_1");
+  vsByteCode = CompileShader(shaderName, nullptr, "vert", "vs_5_1");
+  fsByteCode = CompileShader(shaderName, nullptr, "frag", "ps_5_1");
 }
 
 void GraphicsDevice::CreatePSO() {
   D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 
-  psoDesc.InputLayout = {InputLayout1, _countof(InputLayout1)};
+  psoDesc.InputLayout = {InputLayout2, _countof(InputLayout2)};
   psoDesc.pRootSignature = rootSignature.Get();
 
   psoDesc.VS = {
