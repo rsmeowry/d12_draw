@@ -30,7 +30,7 @@ int D3DApp::Run() {
     GetWindowRect(win.GetHandle(), &rect);
     fw.GetGD().Initialize(win.GetHandle(), rect.right - rect.left, rect.bottom - rect.top);
 
-    MSG msg = { };
+    MSG msg = {};
     fw.GetTime().Reset();
     bool shouldQuit = false;
     while (!mustExit) {
@@ -51,7 +51,7 @@ int D3DApp::Run() {
     }
 
     return 0;
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     MessageBoxA(nullptr, e.what(), "Error in renderer :(", MB_OK | MB_ICONERROR);
     return -1;
   }

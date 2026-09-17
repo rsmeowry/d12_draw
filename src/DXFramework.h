@@ -14,19 +14,18 @@ class DXFramework {
   bool paused = false;
   Timer time;
   GraphicsDevice gd;
-  InputDevice* input = nullptr;
+  InputDevice *input = nullptr;
+
 public:
   DXFramework();
 
-  void Initialize(GameWindow win) {
-    input = win.GetInputDevice();
-  }
+  void Initialize(GameWindow win) { input = win.GetInputDevice(); }
 
   void Update();
 
-  Timer& GetTime() { return time; }
-  GraphicsDevice& GetGD() { return gd; }
-  InputDevice* GetInput() const { return input; }
+  Timer &GetTime() { return time; }
+  GraphicsDevice &GetGD() { return gd; }
+  InputDevice *GetInput() const { return input; }
 };
 
 #endif // D12_DRAW_GAME_H

@@ -6,9 +6,7 @@
 #include "InputDevice.h"
 #include "Util.h"
 
-DXFramework::DXFramework() {
-  time = Timer();
-}
+DXFramework::DXFramework() { time = Timer(); }
 
 void DXFramework::Update() {
   time.Tick();

@@ -32,7 +32,7 @@ private:
   void CreatePSO();
 
   D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBbView() const;
-  ID3D12Resource* GetCurrentBb() const;
+  ID3D12Resource *GetCurrentBb() const;
   D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() const;
 
   static constexpr DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -85,13 +85,14 @@ private:
   UINT cbvSrvUavDescriptorSize = 0;
 
   void TestCubeGeom();
+
 public:
   bool Initialize(HWND hWnd, UINT width, UINT height);
 
   void Clear(const float col[4]);
   void PrepareRt();
   void Display();
-  void Update(float dt);
+  void Update(float dt) const;
   void RenderContainedObject() const;
 };
 

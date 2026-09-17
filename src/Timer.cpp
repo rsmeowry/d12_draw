@@ -14,13 +14,11 @@ float Timer::GameTime() const {
 
   return static_cast<float>((currTime - pausedTime) - baseTime) * secondsPerCount;
 }
-float Timer::DeltaTime() const {
-  return static_cast<float>(deltaTime);
-}
+float Timer::DeltaTime() const { return static_cast<float>(deltaTime); }
 
 void Timer::Reset() {
   __int64 cTime;
-  QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&cTime));
+  QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER *>(&cTime));
 
   baseTime = cTime;
   prevTime = cTime;
@@ -33,7 +31,7 @@ void Timer::Start() {
     return;
 
   __int64 startTime;
-  QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&startTime));
+  QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER *>(&startTime));
   pausedTime += (startTime - stopTime);
   prevTime = startTime;
   stopTime = 0;
@@ -45,7 +43,7 @@ void Timer::Stop() {
     return;
 
   __int64 cTime;
-  QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&cTime));
+  QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER *>(&cTime));
   stopTime = cTime;
   stopped = true;
 }
@@ -57,7 +55,7 @@ void Timer::Tick() {
   }
 
   __int64 cTime;
-  QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&cTime));
+  QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER *>(&cTime));
   currTime = cTime;
 
   deltaTime = (currTime - prevTime) * secondsPerCount;
