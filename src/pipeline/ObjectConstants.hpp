@@ -3,8 +3,7 @@
 
 #include <DirectXMath.h>
 
-struct ObjectConstants
-{
+struct ObjectConstants {
   DirectX::XMFLOAT4X4 world;
   DirectX::XMFLOAT4X4 worldViewProj;
 

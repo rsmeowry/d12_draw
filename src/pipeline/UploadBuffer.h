@@ -15,7 +15,8 @@ class UploadBuffer {
   bool isConstantBuffer = false;
 
 public:
-  UploadBuffer(ID3D12Device *device, const UINT elementCount, const bool sIsConstantBuffer) : isConstantBuffer(sIsConstantBuffer) {
+  UploadBuffer(ID3D12Device *device, const UINT elementCount, const bool sIsConstantBuffer) :
+      isConstantBuffer(sIsConstantBuffer) {
     elementByteSize = sizeof(T);
 
     if (isConstantBuffer) {
@@ -43,7 +44,9 @@ public:
     return uploadBuffer->GetGPUVirtualAddress() + elementIdx * elementByteSize;
   }
   ID3D12Resource *GetBuffer() const { return uploadBuffer.Get(); }
-  void CopyData(const int elementIdx, const T &data) { memcpy(&mappedData[elementIdx * elementByteSize], &data, sizeof(T)); }
+  void CopyData(const int elementIdx, const T &data) {
+    memcpy(&mappedData[elementIdx * elementByteSize], &data, sizeof(T));
+  }
 };
 
 #endif // D12_DRAW_UPLOADBUFFER_H

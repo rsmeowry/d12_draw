@@ -14,7 +14,8 @@ inline std::string WStringToString(const std::wstring &wstr) {
   if (wstr.empty())
     return {};
 
-  const int size = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()), nullptr, 0, nullptr, nullptr);
+  const int size =
+      WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()), nullptr, 0, nullptr, nullptr);
 
   std::string result(size, '\0');
   WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()), result.data(), size, nullptr, nullptr);
@@ -85,8 +86,8 @@ inline ComPtr<ID3DBlob> CompileShader(const std::wstring &filename, const D3D_SH
   ComPtr<ID3DBlob> byteCode;
   ComPtr<ID3DBlob> errors;
 
-  const HRESULT hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, entrypoint.c_str(),
-                                  target.c_str(), compileFlags, 0, &byteCode, &errors);
+  const HRESULT hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                                        entrypoint.c_str(), target.c_str(), compileFlags, 0, &byteCode, &errors);
 
   if (errors != nullptr) {
     OutputDebugStringA(static_cast<const char *>(errors->GetBufferPointer()));

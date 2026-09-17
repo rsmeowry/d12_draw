@@ -45,58 +45,56 @@ void GraphicsDevice::CubeGeom1() {
 void GraphicsDevice::CubeGeom2() {
   using namespace DirectX;
 
-  constexpr std::array vertices =
-  {
-    Vertex2{ {-1,-1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
-    Vertex2{ {-1,+1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
-    Vertex2{ {+1,+1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
-    Vertex2{ {+1,-1,-1}, {0,0,-1}, {1.0f, 0.0f, 0.0f} },
+  constexpr std::array vertices = {
+      Vertex2{{-1, -1, -1}, {0, 0, -1}, {1.0f, 0.0f, 0.0f}},
+      Vertex2{{-1, +1, -1}, {0, 0, -1}, {1.0f, 0.0f, 0.0f}},
+      Vertex2{{+1, +1, -1}, {0, 0, -1}, {1.0f, 0.0f, 0.0f}},
+      Vertex2{{+1, -1, -1}, {0, 0, -1}, {1.0f, 0.0f, 0.0f}},
 
-    Vertex2{ {-1,-1,+1}, {0,0,+1}, {0.0f, 1.0f, 0.0f} },
-    Vertex2{ {+1,-1,+1}, {0,0,+1}, {0.0f, 1.0f, 0.0f} },
-    Vertex2{ {+1,+1,+1}, {0,0,+1}, {0.0f, 1.0f, 0.0f} },
-    Vertex2{ {-1,+1,+1}, {0,0,+1}, {0.0f, 1.0f, 0.0f} },
+      Vertex2{{-1, -1, +1}, {0, 0, +1}, {0.0f, 1.0f, 0.0f}},
+      Vertex2{{+1, -1, +1}, {0, 0, +1}, {0.0f, 1.0f, 0.0f}},
+      Vertex2{{+1, +1, +1}, {0, 0, +1}, {0.0f, 1.0f, 0.0f}},
+      Vertex2{{-1, +1, +1}, {0, 0, +1}, {0.0f, 1.0f, 0.0f}},
 
-    Vertex2{ {-1,-1,+1}, {-1,0,0}, {0.0f, 0.0f, 1.0f} },
-    Vertex2{ {-1,+1,+1}, {-1,0,0}, {0.0f, 0.0f, 1.0f} },
-    Vertex2{ {-1,+1,-1}, {-1,0,0}, {0.0f, 0.0f, 1.0f} },
-    Vertex2{ {-1,-1,-1}, {-1,0,0}, {0.0f, 0.0f, 1.0f} },
+      Vertex2{{-1, -1, +1}, {-1, 0, 0}, {0.0f, 0.0f, 1.0f}},
+      Vertex2{{-1, +1, +1}, {-1, 0, 0}, {0.0f, 0.0f, 1.0f}},
+      Vertex2{{-1, +1, -1}, {-1, 0, 0}, {0.0f, 0.0f, 1.0f}},
+      Vertex2{{-1, -1, -1}, {-1, 0, 0}, {0.0f, 0.0f, 1.0f}},
 
-    Vertex2{ {+1,-1,-1}, {+1,0,0}, {1.0f, 1.0f, 0.0f} },
-    Vertex2{ {+1,+1,-1}, {+1,0,0}, {1.0f, 1.0f, 0.0f} },
-    Vertex2{ {+1,+1,+1}, {+1,0,0}, {1.0f, 1.0f, 0.0f} },
-    Vertex2{ {+1,-1,+1}, {+1,0,0}, {1.0f, 1.0f, 0.0f} },
+      Vertex2{{+1, -1, -1}, {+1, 0, 0}, {1.0f, 1.0f, 0.0f}},
+      Vertex2{{+1, +1, -1}, {+1, 0, 0}, {1.0f, 1.0f, 0.0f}},
+      Vertex2{{+1, +1, +1}, {+1, 0, 0}, {1.0f, 1.0f, 0.0f}},
+      Vertex2{{+1, -1, +1}, {+1, 0, 0}, {1.0f, 1.0f, 0.0f}},
 
-    Vertex2{ {-1,+1,-1}, {0,+1,0}, {0.0f, 1.0f, 1.0f} },
-    Vertex2{ {-1,+1,+1}, {0,+1,0}, {0.0f, 1.0f, 1.0f} },
-    Vertex2{ {+1,+1,+1}, {0,+1,0}, {0.0f, 1.0f, 1.0f} },
-    Vertex2{ {+1,+1,-1}, {0,+1,0}, {0.0f, 1.0f, 1.0f} },
+      Vertex2{{-1, +1, -1}, {0, +1, 0}, {0.0f, 1.0f, 1.0f}},
+      Vertex2{{-1, +1, +1}, {0, +1, 0}, {0.0f, 1.0f, 1.0f}},
+      Vertex2{{+1, +1, +1}, {0, +1, 0}, {0.0f, 1.0f, 1.0f}},
+      Vertex2{{+1, +1, -1}, {0, +1, 0}, {0.0f, 1.0f, 1.0f}},
 
-    // Bottom face (-Y) — пурпурный
-    Vertex2{ {-1,-1,+1}, {0,-1,0}, {1.0f, 0.0f, 1.0f} },
-    Vertex2{ {-1,-1,-1}, {0,-1,0}, {1.0f, 0.0f, 1.0f} },
-    Vertex2{ {+1,-1,-1}, {0,-1,0}, {1.0f, 0.0f, 1.0f} },
-    Vertex2{ {+1,-1,+1}, {0,-1,0}, {1.0f, 0.0f, 1.0f} },
+      // Bottom face (-Y) — пурпурный
+      Vertex2{{-1, -1, +1}, {0, -1, 0}, {1.0f, 0.0f, 1.0f}},
+      Vertex2{{-1, -1, -1}, {0, -1, 0}, {1.0f, 0.0f, 1.0f}},
+      Vertex2{{+1, -1, -1}, {0, -1, 0}, {1.0f, 0.0f, 1.0f}},
+      Vertex2{{+1, -1, +1}, {0, -1, 0}, {1.0f, 0.0f, 1.0f}},
   };
 
-  const std::array<std::uint16_t, 36> indices =
-  {
-    0,1,2,  0,2,3, // front
-    4,5,6,  4,6,7, // back
-    8,9,10, 8,10,11, // left
-    12,13,14, 12,14,15, // right
-    16,17,18, 16,18,19, // top
-    20,21,22, 20,22,23, // bottom
+  const std::array<std::uint16_t, 36> indices = {
+      0,  1,  2,  0,  2,  3, // front
+      4,  5,  6,  4,  6,  7, // back
+      8,  9,  10, 8,  10, 11, // left
+      12, 13, 14, 12, 14, 15, // right
+      16, 17, 18, 16, 18, 19, // top
+      20, 21, 22, 20, 22, 23, // bottom
   };
 
   constexpr UINT vbByteSize = vertices.size() * sizeof(Vertex2);
   constexpr UINT ibByteSize = indices.size() * sizeof(std::uint16_t);
 
-  vertexBufferGPU = CreateDefaultBuffer(
-    d3dDevice.Get(), commandList.Get(), vertices.data(), vbByteSize, vertexBufferUploader);
+  vertexBufferGPU =
+      CreateDefaultBuffer(d3dDevice.Get(), commandList.Get(), vertices.data(), vbByteSize, vertexBufferUploader);
 
-  indexBufferGPU = CreateDefaultBuffer(
-    d3dDevice.Get(), commandList.Get(), indices.data(), ibByteSize, indexBufferUploader);
+  indexBufferGPU =
+      CreateDefaultBuffer(d3dDevice.Get(), commandList.Get(), indices.data(), ibByteSize, indexBufferUploader);
 
   vbv.BufferLocation = vertexBufferGPU->GetGPUVirtualAddress();
   vbv.StrideInBytes = sizeof(Vertex2);
@@ -205,12 +203,12 @@ void GraphicsDevice::Update(const float dt) const {
 
   XMStoreFloat3(&objConstants.eyePosW, eyePos);
 
-  objConstants.lightDirection = { -0.5f, -1.0f, 0.5f };
-  objConstants.lightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+  objConstants.lightDirection = {-0.5f, -1.0f, 0.5f};
+  objConstants.lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
-  objConstants.ambientColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-  objConstants.diffuseColor = { 0.7f, 0.2f, 0.2f, 1.0f };
-  objConstants.specularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+  objConstants.ambientColor = {0.1f, 0.1f, 0.1f, 1.0f};
+  objConstants.diffuseColor = {0.7f, 0.2f, 0.2f, 1.0f};
+  objConstants.specularColor = {1.0f, 1.0f, 1.0f, 1.0f};
   objConstants.shininess = 120.0f;
 
   objectCB->CopyData(0, objConstants);
@@ -402,12 +400,13 @@ void GraphicsDevice::CreateRootSignature() {
 
 
   const CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
-                                          D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+                                                D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
   ComPtr<ID3DBlob> serializedRootSig;
   ComPtr<ID3DBlob> errorBlob;
 
-  const HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serializedRootSig, &errorBlob);
+  const HRESULT hr =
+      D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serializedRootSig, &errorBlob);
 
   if (errorBlob != nullptr) {
     OutputDebugStringA(static_cast<const char *>(errorBlob->GetBufferPointer()));
