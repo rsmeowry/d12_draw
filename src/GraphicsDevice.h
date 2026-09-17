@@ -8,6 +8,9 @@
 #include <dxgi1_6.h>
 #include <wrl/client.h>
 
+#include "pipeline/ObjectConstants.hpp"
+#include "pipeline/UploadBuffer.h"
+
 using Microsoft::WRL::ComPtr;
 
 class GraphicsDevice {
@@ -22,12 +25,18 @@ private:
   void CreateDsvHeap();
   void CreateDepthStencilBuffer(UINT width, UINT height);
   void SetViewportAndScissor(UINT width, UINT height);
+  void CreateCBuffer();
+  void CreateRootSignature();
   void FlushCommandQueue();
   void CompileShaders();
+  void CreatePSO();
+
   D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBbView() const;
   ID3D12Resource* GetCurrentBb() const;
   D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() const;
 
+  static constexpr DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+  static constexpr DXGI_FORMAT depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
   static constexpr UINT swapChainBufferCount = 2;
   UINT currBackBuffer = 0;
 
@@ -56,6 +65,14 @@ private:
   ComPtr<ID3DBlob> vsByteCode;
   ComPtr<ID3DBlob> fsByteCode;
 
+  // CB
+  std::unique_ptr<UploadBuffer<ObjectConstants>> objectCB;
+  ComPtr<ID3D12DescriptorHeap> cbvHeap;
+  ComPtr<ID3D12RootSignature> rootSignature;
+
+  // pipelinee
+  ComPtr<ID3D12PipelineState> pso;
+
   D3D12_VERTEX_BUFFER_VIEW vbv = {};
   D3D12_INDEX_BUFFER_VIEW ibv = {};
 
@@ -75,7 +92,7 @@ public:
   void PrepareRt();
   void Display();
   void Update(float dt);
-
+  void RenderContainedObject() const;
 };
 
 #endif // D12_DRAW_GRAPHICSDEVICE_H

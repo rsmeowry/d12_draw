@@ -6,6 +6,8 @@
 #include <d3dx12.h>
 #include <stdexcept>
 
+using Microsoft::WRL::ComPtr;
+
 inline UINT CalcConstantBufferByteSize(UINT byteSize) {
   return (byteSize + 255) & ~255;
 }

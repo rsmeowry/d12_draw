@@ -83,6 +83,11 @@ bool GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height) {
   // shaders !!!!!!11
   CompileShaders();
 
+  // cbuffer
+  CreateCBuffer();
+  CreateRootSignature();
+  CreatePSO();
+
   return true;
 }
 void GraphicsDevice::Clear(const float col[4]) {
@@ -97,7 +102,7 @@ void GraphicsDevice::Clear(const float col[4]) {
 
 void GraphicsDevice::PrepareRt() {
   ThrowIfFailed(commandAlloc->Reset());
-  ThrowIfFailed(commandList->Reset(commandAlloc.Get(), nullptr));
+  ThrowIfFailed(commandList->Reset(commandAlloc.Get(), pso.Get()));
 
   // present -> rt
   CD3DX12_RESOURCE_BARRIER toRenderTarget = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -130,7 +135,39 @@ void GraphicsDevice::Display() {
 }
 
 void GraphicsDevice::Update(float dt) {
-  // TODO: update logiccc
+  using namespace DirectX;
+
+  static float angle = 0.0f;
+  angle += dt;
+
+  XMMATRIX world = XMMatrixRotationY(angle);
+  XMMATRIX view = XMMatrixLookAtLH(
+    XMVectorSet(3.0f, 3.0f, -5.0f, 1.0f),
+    XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f),
+    XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+  XMMATRIX proj = XMMatrixPerspectiveFovLH(
+    XM_PIDIV4, viewport.Width / viewport.Height, 1.0f, 100.0f);
+
+  XMMATRIX worldViewProj = world * view * proj;
+
+  ObjectConstants objConstants;
+  XMStoreFloat4x4(&objConstants.worldViewProj, XMMatrixTranspose(worldViewProj));
+  objectCB->CopyData(0, objConstants);
+}
+
+void GraphicsDevice::RenderContainedObject() const {
+  commandList->SetGraphicsRootSignature(rootSignature.Get());
+
+  ID3D12DescriptorHeap* heaps[] = { cbvHeap.Get() };
+  commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+  commandList->SetGraphicsRootDescriptorTable(0, cbvHeap->GetGPUDescriptorHandleForHeapStart());
+
+  commandList->IASetVertexBuffers(0, 1, &vbv);
+  commandList->IASetIndexBuffer(&ibv);
+  commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+  commandList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
 }
 
 bool GraphicsDevice::InitDevice() {
@@ -206,7 +243,7 @@ void GraphicsDevice::CreateSwapChain(HWND hWnd, UINT width, UINT height) {
   DXGI_SWAP_CHAIN_DESC1 sd = {};
   sd.Width = width;
   sd.Height = height;
-  sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  sd.Format = backBufferFormat;
   sd.SampleDesc.Count = 1;
   sd.SampleDesc.Quality = 0;
   sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -271,14 +308,14 @@ void GraphicsDevice::CreateDepthStencilBuffer(UINT width, UINT height) {
   depthStencilDesc.Height = height;
   depthStencilDesc.DepthOrArraySize = 1;
   depthStencilDesc.MipLevels = 1;
-  depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+  depthStencilDesc.Format = depthStencilFormat;
   depthStencilDesc.SampleDesc.Count = 1;
   depthStencilDesc.SampleDesc.Quality = 0;
   depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
   depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
   D3D12_CLEAR_VALUE optClear = {};
-  optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+  optClear.Format = depthStencilFormat;
   optClear.DepthStencil.Depth = 1.0f;
   optClear.DepthStencil.Stencil = 0;
 
@@ -321,6 +358,57 @@ void GraphicsDevice::SetViewportAndScissor(UINT width, UINT height) {
   scissorRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height)};
 }
 
+void GraphicsDevice::CreateCBuffer() {
+  D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
+  cbvHeapDesc.NumDescriptors = 1;
+  cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+  cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+  ThrowIfFailed(d3dDevice->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&cbvHeap)));
+
+  objectCB = std::make_unique<UploadBuffer<ObjectConstants>>(d3dDevice.Get(), 1, true);
+
+  D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+  cbvDesc.BufferLocation = objectCB->GetElementAddress(0);
+  cbvDesc.SizeInBytes = objectCB->GetElementByteSize();
+  d3dDevice->CreateConstantBufferView(&cbvDesc, cbvHeap->GetCPUDescriptorHandleForHeapStart());
+}
+
+void GraphicsDevice::CreateRootSignature() {
+  CD3DX12_DESCRIPTOR_RANGE cbvTable;
+  cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+
+  CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+  slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
+
+
+  CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1,
+    slotRootParameter,
+    0,
+    nullptr,
+    D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+  ComPtr<ID3DBlob> serializedRootSig;
+  ComPtr<ID3DBlob> errorBlob;
+
+  HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc,
+    D3D_ROOT_SIGNATURE_VERSION_1,
+    &serializedRootSig,
+    &errorBlob);
+
+  if (errorBlob != nullptr)
+  {
+    OutputDebugStringA(static_cast<const char*>(errorBlob->GetBufferPointer()));
+  }
+  ThrowIfFailed(hr);
+
+  ThrowIfFailed(d3dDevice->CreateRootSignature(
+    0,
+    serializedRootSig->GetBufferPointer(),
+    serializedRootSig->GetBufferSize(),
+    IID_PPV_ARGS(&rootSignature)));
+}
+
 void GraphicsDevice::FlushCommandQueue() {
   currentFence++;
 
@@ -335,6 +423,39 @@ void GraphicsDevice::FlushCommandQueue() {
 void GraphicsDevice::CompileShaders() {
   vsByteCode = CompileShader(L"shaders/Color.hlsl", nullptr, "vert", "vs_5_1");
   fsByteCode = CompileShader(L"shaders/Color.hlsl", nullptr, "frag", "ps_5_1");
+}
+
+void GraphicsDevice::CreatePSO() {
+  D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+
+  psoDesc.InputLayout = { InputLayout1, _countof(InputLayout1) };
+  psoDesc.pRootSignature = rootSignature.Get();
+
+  psoDesc.VS =
+  {
+    reinterpret_cast<const BYTE*>(vsByteCode->GetBufferPointer()),
+    vsByteCode->GetBufferSize(),
+  };
+  psoDesc.PS =
+  {
+    reinterpret_cast<const BYTE*>(fsByteCode->GetBufferPointer()),
+    fsByteCode->GetBufferSize(),
+  };
+
+  psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+  psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+  psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+  psoDesc.SampleMask = UINT_MAX;
+  psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+  psoDesc.NumRenderTargets = 1;
+  psoDesc.RTVFormats[0] = backBufferFormat;
+  psoDesc.DSVFormat = depthStencilFormat;
+
+  psoDesc.SampleDesc.Count = 1;
+  psoDesc.SampleDesc.Quality = 0;
+
+  ThrowIfFailed(d3dDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso)));
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE GraphicsDevice::GetCurrentBbView() const {
